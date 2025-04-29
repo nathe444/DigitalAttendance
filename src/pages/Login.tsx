@@ -341,11 +341,25 @@ export default function Login() {
             <rect width="100%" height="100%" fill="url(#grid)" />
           </svg>
         </div>
-        <div className="absolute inset-0 z-10 flex items-center justify-center">
-          <h1 className="text-6xl text-center font-extrabold text-white tracking-wide leading-tight">
-            Attendance Management
-          </h1>
-        </div>
+        <motion.div
+          className="relative z-10 max-w-xl w-full p-8"
+          initial={{ y: 40, opacity: 0 }}
+          animate={{ y: 0, opacity: 1 }}
+          transition={{ duration: 1, delay: 0.3, type: "spring" }}
+        >
+          <img
+            src="https://img.freepik.com/free-vector/confirmed-attendance-concept-illustration_114360-7745.jpg?t=st=1745952136~exp=1745955736~hmac=f26d2322e3fa1aa5ff1273b2fb164c869f02b5caadf7096510e1a6b3fe042019&w=826"
+            alt="Digital Attendance System"
+            className="w-full h-auto max-h-[400px] object-cover rounded-2xl shadow-2xl"
+          />
+          <div className="mt-8 text-white">
+            <h2 className="text-3xl font-bold">Digital Attendance System</h2>
+            <p className="mt-4 text-white/80 text-lg">
+              Sign in securely with your signature to track and manage
+              attendance efficiently.
+            </p>
+          </div>
+        </motion.div>
       </motion.div>
     </div>
   );
