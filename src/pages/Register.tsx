@@ -5,6 +5,7 @@ import * as z from "zod";
 import { toast } from "sonner";
 import { Loader2 } from "lucide-react";
 import { useRegisterMutation } from "@/store/apis/auth/authApi";
+import { useNavigate } from "react-router-dom";
 
 const formSchema = z.object({
   email: z.string().email("Please enter a valid email address"),
@@ -32,8 +33,8 @@ export default function Register() {
   );
   const [sigPad, setSigPad] = useState<SignaturePad | null>(null);
 
-  // Fix the RTK Query hook usage
   const [register, { isLoading }] = useRegisterMutation();
+  const navigate = useNavigate();
 
   const validateForm = () => {
     try {
@@ -105,6 +106,7 @@ export default function Register() {
       }).unwrap();
       console.log("resp", response);
       toast.success("Registration successful!");
+      navigate("/login");
     } catch (error) {
       toast.error("Registration failed. Please try again.");
     }
@@ -140,17 +142,14 @@ export default function Register() {
         <div className="relative w-full max-w-md p-6 rounded-xl bg-white/90 backdrop-blur-sm">
           <div className="mb-5 ">
             <h1 className="text-2xl font-bold text-indigo-600">Register</h1>
-            <p className="text-balance text-gray-600 mt-1 text-sm">
-              Create your account to start taking attendance
-            </p>
           </div>
-          <form onSubmit={handleSubmit} className="space-y-5">
+          <form onSubmit={handleSubmit} className="space-y-3">
             {/* Email and Phone Inputs */}
 
             <div>
               <label
                 htmlFor="name"
-                className="block text-gray-700 font-medium mb-2"
+                className="block text-gray-700 font-medium mb-1 text-sm"
               >
                 Name
               </label>
@@ -160,7 +159,7 @@ export default function Register() {
                 type="text"
                 value={formData.name}
                 onChange={handleInputChange}
-                className={`w-full h-12 px-4 rounded-xl border-2 bg-white/50 transition-all outline-none ${
+                className={`w-full h-10 px-3 rounded-md border-2 bg-white/50 transition-all outline-none ${
                   errors.name ? "border-red-500" : "border-gray-200"
                 }`}
                 required
@@ -183,7 +182,7 @@ export default function Register() {
                 type="email"
                 value={formData.email}
                 onChange={handleInputChange}
-                className={`w-full h-10 px-3 rounded-lg border bg-white/50 transition-all outline-none ${
+                className={`w-full h-10 px-3 rounded-md border bg-white/50 transition-all outline-none ${
                   errors.email ? "border-red-500" : "border-gray-200"
                 }`}
                 required
@@ -196,7 +195,7 @@ export default function Register() {
             <div>
               <label
                 htmlFor="phone"
-                className="block text-gray-700 font-medium mb-2"
+                className="block text-gray-700 font-medium mb-1 text-sm"
               >
                 Phone number
               </label>
@@ -206,7 +205,7 @@ export default function Register() {
                 type="tel"
                 value={formData.phone}
                 onChange={handleInputChange}
-                className={`w-full h-12 px-4 rounded-xl border-2 bg-white/50 transition-all outline-none ${
+                className={`w-full h-10 px-3 rounded-md border-2 bg-white/50 transition-all outline-none ${
                   errors.phone ? "border-red-500" : "border-gray-200"
                 }`}
                 required
@@ -219,14 +218,14 @@ export default function Register() {
 
             {/* Signature Pad */}
             <div>
-              <label className="mb-1 block text-gray-700 font-medium">
+              <label className="mb-1 block text-gray-700 font-medium text-sm">
                 Signature
               </label>
               <div className="border-2 border-gray-200 rounded-xl overflow-hidden bg-white shadow-sm">
                 <SignaturePad
                   ref={setSigPad}
                   canvasProps={{
-                    className: "w-full h-32 bg-white",
+                    className: "w-full h-42 bg-white",
                   }}
                   penColor="#3b82f6"
                 />

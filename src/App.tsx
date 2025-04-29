@@ -4,6 +4,7 @@ import { Provider } from "react-redux";
 import { store } from "./store/store"; // Or wherever your store is defined
 import Register from "./pages/Register"; // Import the Register page
 import { Toaster } from "@/components/ui/sonner"; // Import Toaster
+import Login from "./pages/Login";
 
 function App() {
   return (
@@ -23,6 +24,7 @@ function App() {
             }
           />
           <Route path="/register" element={<Register />} />
+          <Route path="/login" element={<Login />} />
           <Route path="/*" element={<div className="p-4">404 Not Found</div>} />
         </Routes>
         {/* Toaster for notifications */}

@@ -3,7 +3,10 @@ import { motion } from "framer-motion";
 import SignaturePad from "react-signature-canvas";
 import * as z from "zod";
 import { toast } from "sonner";
-import { CheckCircle2 } from "lucide-react";
+import { CheckCircle2, Loader2 } from "lucide-react";
+import { useLoginMutation } from "@/store/apis/auth/authApi";
+import { useNavigate } from "react-router-dom";
+
 const emailSchema = z.object({
   email: z.string().email("Please enter a valid email address"),
 });
@@ -22,15 +25,15 @@ export default function Login() {
     email: "",
     phone: "",
   });
+
+  const [login, { isLoading, isSuccess }] = useLoginMutation();
+  const navigate = useNavigate();
   const [errors, setErrors] = useState<Partial<Record<keyof FormData, string>>>(
     {}
   );
   const [signature, setSignature] = useState<string>("");
   const [sigPad, setSigPad] = useState<SignaturePad | null>(null);
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const [success, setSuccess] = useState(false);
-  const [isEmailTab, setIsEmailTab] = useState(true); // State for tab toggle
-
+  const [isEmailTab, setIsEmailTab] = useState(true);
   const validateForm = () => {
     try {
       const schema = isEmailTab ? emailSchema : phoneSchema;
@@ -88,9 +91,7 @@ export default function Login() {
 
     if (!isFormValid) return;
 
-    setIsSubmitting(true);
     try {
-      // add name
       const formToSend = new FormData();
       if (isEmailTab && formData.email != null) {
         formToSend.append("email", formData.email);
@@ -100,34 +101,31 @@ export default function Login() {
 
       formToSend.append("signature_base64", signature);
       console.log("sending form", formToSend);
-      // await new Promise((resolve) => setTimeout(resolve, 1200));
-      const response = await axios.post(
-        `/api/account/users/${isEmailTab ? "email_login" : "phone_login"}/`,
-        formToSend,
-        {
-          headers: {
-            "Content-Type": "multipart/form-data",
-          },
-        }
-      );
+
+      if (!formData.phone) return;
+
+      const response = await login({
+        phone: formData.phone,
+        signature_base64: signature,
+      }).unwrap();
+
       console.log("resp", response);
-      setSuccess(true);
-      toast.success("Registration successful!");
-      setTimeout(() => setSuccess(false), 2000);
+      toast.success("Login successful!");
+      navigate("/");
     } catch (error) {
+      console.error("Login error:", error);
       if (
-        error != null &&
-        error instanceof AxiosError &&
-        error.response != null &&
-        error.response.data != null &&
-        error.response.data.error != null
+        error &&
+        typeof error === "object" &&
+        "data" in error &&
+        error.data &&
+        typeof error.data === "object" &&
+        "error" in error.data
       ) {
-        toast.error(error.response.data.error);
+        toast.error(String(error.data.error));
       } else {
-        toast.error("Registration failed. Please try again.");
+        toast.error("Login failed. Please try again.");
       }
-    } finally {
-      setIsSubmitting(false);
     }
   };
 
@@ -272,7 +270,7 @@ export default function Login() {
                   Save Signature
                 </button>
               </div>
-              {!signature && isSubmitting && (
+              {!signature && isLoading && (
                 <p className="text-xs text-red-600 mt-1">
                   Please save your signature.
                 </p>
@@ -287,10 +285,15 @@ export default function Login() {
             >
               <button
                 type="submit"
-                disabled={isSubmitting || success}
+                disabled={isLoading || isSuccess}
                 className="w-full rounded-full py-3 text-base font-semibold flex items-center justify-center gap-2 bg-gradient-to-r from-blue-600 to-indigo-600 text-white hover:from-blue-700 hover:to-indigo-700 transition-all shadow-lg disabled:opacity-70"
               >
-                {success ? (
+                {isLoading ? (
+                  <div className="flex justify-center items-center gap-1">
+                    <Loader2 className="animate-spin w-4 h-4" />
+                    <span>Logging in...</span>
+                  </div>
+                ) : isSuccess ? (
                   <motion.span
                     initial={{ scale: 0 }}
                     animate={{ scale: 1, rotate: 360 }}

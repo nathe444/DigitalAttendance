@@ -2,7 +2,7 @@ import { createSlice, PayloadAction } from "@reduxjs/toolkit";
 import { LoginResponse } from "./authApi";
 
 interface AuthState {
-  user: LoginResponse["staff"] | null;
+  user: LoginResponse["user"] | null;
   accessToken: string | null;
   refreshToken: string | null;
 }
@@ -13,19 +13,17 @@ const initialState: AuthState = {
   refreshToken: localStorage.getItem("refreshToken") || null,
 };
 
-
-
 const authSlice = createSlice({
   name: "auth",
   initialState,
   reducers: {
     setUser: (state, action: PayloadAction<LoginResponse>) => {
-      state.user = action.payload.staff;
+      state.user = action.payload.user;
       state.accessToken = action.payload.access_token;
-      state.refreshToken = action.payload.refreshToken;
-      localStorage.setItem("user", JSON.stringify(action.payload.staff));
+      state.refreshToken = action.payload.refresh_token;
+      localStorage.setItem("user", JSON.stringify(action.payload.user));
       localStorage.setItem("token", action.payload.access_token);
-      localStorage.setItem("refreshToken", action.payload.refreshToken);
+      localStorage.setItem("refreshToken", action.payload.refresh_token);
     },
     clearUser: (state) => {
       state.user = null;
