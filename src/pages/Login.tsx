@@ -3,41 +3,38 @@ import { motion } from "framer-motion";
 import SignaturePad from "react-signature-canvas";
 import * as z from "zod";
 import { toast } from "sonner";
-import { Loader2 } from "lucide-react";
-import { useRegisterMutation } from "@/store/apis/auth/authApi";
-
-const formSchema = z.object({
+import { CheckCircle2 } from "lucide-react";
+const emailSchema = z.object({
   email: z.string().email("Please enter a valid email address"),
-  phone: z.string().min(10, "Phone number must be at least 10 digits"),
-  name: z.string().min(1, "Name is required"),
 });
 
-type FormData = z.infer<typeof formSchema>;
-interface PointType {
-  x: number;
-  y: number;
-}
-export default function Register() {
+const phoneSchema = z.object({
+  phone: z.string().min(10, "Phone number must be at least 10 digits"),
+});
+
+type FormData = {
+  email?: string;
+  phone?: string;
+};
+
+export default function Login() {
   const [formData, setFormData] = useState<FormData>({
     email: "",
     phone: "",
-    name: "",
   });
   const [errors, setErrors] = useState<Partial<Record<keyof FormData, string>>>(
     {}
   );
   const [signature, setSignature] = useState<string>("");
-  const [signatureStroke, setSignatureStroke] = useState<PointType[][] | null>(
-    null
-  );
   const [sigPad, setSigPad] = useState<SignaturePad | null>(null);
-
-  // Fix the RTK Query hook usage
-  const [register, { isLoading }] = useRegisterMutation();
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [success, setSuccess] = useState(false);
+  const [isEmailTab, setIsEmailTab] = useState(true); // State for tab toggle
 
   const validateForm = () => {
     try {
-      formSchema.parse(formData);
+      const schema = isEmailTab ? emailSchema : phoneSchema;
+      schema.parse(formData);
       setErrors({});
       return true;
     } catch (error) {
@@ -74,8 +71,6 @@ export default function Register() {
     if (sigPad && !sigPad.isEmpty()) {
       const signatureData = sigPad.toDataURL();
       setSignature(signatureData);
-      const signatureStrokeData = sigPad.toData();
-      setSignatureStroke(signatureStrokeData);
       toast.success("Signature saved!");
     } else {
       toast.error("Please draw your signature first.");
@@ -84,8 +79,8 @@ export default function Register() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    console.log("form data", formData);
     const isFormValid = validateForm();
-
     if (!signature) {
       toast.error("Please provide and save your signature");
       return;
@@ -93,20 +88,46 @@ export default function Register() {
 
     if (!isFormValid) return;
 
+    setIsSubmitting(true);
     try {
-      const response = await register({
-        email: formData.email,
-        phone: formData.phone,
-        name: formData.name,
-        signature_base64: signature,
-        signature_stroke: signatureStroke
-          ? JSON.stringify(signatureStroke)
-          : "",
-      }).unwrap();
+      // add name
+      const formToSend = new FormData();
+      if (isEmailTab && formData.email != null) {
+        formToSend.append("email", formData.email);
+      } else if (!isEmailTab && formData.phone != null) {
+        formToSend.append("phone", formData.phone);
+      }
+
+      formToSend.append("signature_base64", signature);
+      console.log("sending form", formToSend);
+      // await new Promise((resolve) => setTimeout(resolve, 1200));
+      const response = await axios.post(
+        `/api/account/users/${isEmailTab ? "email_login" : "phone_login"}/`,
+        formToSend,
+        {
+          headers: {
+            "Content-Type": "multipart/form-data",
+          },
+        }
+      );
       console.log("resp", response);
+      setSuccess(true);
       toast.success("Registration successful!");
+      setTimeout(() => setSuccess(false), 2000);
     } catch (error) {
-      toast.error("Registration failed. Please try again.");
+      if (
+        error != null &&
+        error instanceof AxiosError &&
+        error.response != null &&
+        error.response.data != null &&
+        error.response.data.error != null
+      ) {
+        toast.error(error.response.data.error);
+      } else {
+        toast.error("Registration failed. Please try again.");
+      }
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -139,83 +160,89 @@ export default function Register() {
       >
         <div className="relative w-full max-w-md p-6 rounded-xl bg-white/90 backdrop-blur-sm">
           <div className="mb-5 ">
-            <h1 className="text-2xl font-bold text-indigo-600">Register</h1>
+            <h1 className="text-2xl font-bold text-indigo-600">Login</h1>
             <p className="text-balance text-gray-600 mt-1 text-sm">
-              Create your account to start taking attendance
+              Login to your account
             </p>
           </div>
-          <form onSubmit={handleSubmit} className="space-y-5">
-            {/* Email and Phone Inputs */}
 
-            <div>
-              <label
-                htmlFor="name"
-                className="block text-gray-700 font-medium mb-2"
-              >
-                Name
-              </label>
-              <input
-                id="name"
-                name="name"
-                type="text"
-                value={formData.name}
-                onChange={handleInputChange}
-                className={`w-full h-12 px-4 rounded-xl border-2 bg-white/50 transition-all outline-none ${
-                  errors.name ? "border-red-500" : "border-gray-200"
-                }`}
-                required
-                autoComplete="off"
-              />
-              {errors.phone && (
-                <p className="text-xs text-red-600 mt-1">{errors.name}</p>
-              )}
-            </div>
-            <div>
-              <label
-                htmlFor="email"
-                className="block text-gray-700 font-medium mb-1 text-sm"
-              >
-                Email address
-              </label>
-              <input
-                id="email"
-                name="email"
-                type="email"
-                value={formData.email}
-                onChange={handleInputChange}
-                className={`w-full h-10 px-3 rounded-lg border bg-white/50 transition-all outline-none ${
-                  errors.email ? "border-red-500" : "border-gray-200"
-                }`}
-                required
-                autoComplete="off"
-              />
-              {errors.email && (
-                <p className="text-xs text-red-600 mt-1">{errors.email}</p>
-              )}
-            </div>
-            <div>
-              <label
-                htmlFor="phone"
-                className="block text-gray-700 font-medium mb-2"
-              >
-                Phone number
-              </label>
-              <input
-                id="phone"
-                name="phone"
-                type="tel"
-                value={formData.phone}
-                onChange={handleInputChange}
-                className={`w-full h-12 px-4 rounded-xl border-2 bg-white/50 transition-all outline-none ${
-                  errors.phone ? "border-red-500" : "border-gray-200"
-                }`}
-                required
-                autoComplete="off"
-              />
-              {errors.phone && (
-                <p className="text-xs text-red-600 mt-1">{errors.phone}</p>
-              )}
-            </div>
+          {/* Tabs for email and phone selection */}
+          <div className="flex mb-4">
+            <button
+              type="button"
+              onClick={() => setIsEmailTab(true)}
+              className={`w-1/2 py-2 text-center font-medium rounded-t-lg ${
+                isEmailTab
+                  ? "bg-indigo-600 text-white"
+                  : "bg-gray-100 text-gray-700"
+              }`}
+            >
+              Email
+            </button>
+            <button
+              type="button"
+              onClick={() => setIsEmailTab(false)}
+              className={`w-1/2 py-2 text-center font-medium rounded-t-lg ${
+                !isEmailTab
+                  ? "bg-indigo-600 text-white"
+                  : "bg-gray-100 text-gray-700"
+              }`}
+            >
+              Phone
+            </button>
+          </div>
+
+          {/* Conditional inputs for Email or Phone */}
+          <form onSubmit={handleSubmit} className="space-y-5">
+            {isEmailTab ? (
+              <div>
+                <label
+                  htmlFor="email"
+                  className="block text-gray-700 font-medium mb-1 text-sm"
+                >
+                  Email address
+                </label>
+                <input
+                  id="email"
+                  name="email"
+                  type="email"
+                  value={formData.email}
+                  onChange={handleInputChange}
+                  className={`w-full h-10 px-3 rounded-lg border bg-white/50 transition-all outline-none ${
+                    errors.email ? "border-red-500" : "border-gray-200"
+                  }`}
+                  required
+                  autoComplete="off"
+                />
+                {errors.email && (
+                  <p className="text-xs text-red-600 mt-1">{errors.email}</p>
+                )}
+              </div>
+            ) : (
+              <div>
+                <label
+                  htmlFor="phone"
+                  className="block text-gray-700 font-medium mb-2"
+                >
+                  Phone number
+                </label>
+                <input
+                  id="phone"
+                  name="phone"
+                  type="tel"
+                  value={formData.phone}
+                  onChange={handleInputChange}
+                  className={`w-full h-12 px-4 rounded-xl border-2 bg-white/50 transition-all outline-none ${
+                    errors.phone ? "border-red-500" : "border-gray-200"
+                  }`}
+                  required
+                  autoComplete="off"
+                />
+                {errors.phone && (
+                  <p className="text-xs text-red-600 mt-1">{errors.phone}</p>
+                )}
+              </div>
+            )}
 
             {/* Signature Pad */}
             <div>
@@ -225,9 +252,7 @@ export default function Register() {
               <div className="border-2 border-gray-200 rounded-xl overflow-hidden bg-white shadow-sm">
                 <SignaturePad
                   ref={setSigPad}
-                  canvasProps={{
-                    className: "w-full h-32 bg-white",
-                  }}
+                  canvasProps={{ className: "w-full h-32 bg-white" }}
                   penColor="#3b82f6"
                 />
               </div>
@@ -247,7 +272,7 @@ export default function Register() {
                   Save Signature
                 </button>
               </div>
-              {!signature && isLoading && (
+              {!signature && isSubmitting && (
                 <p className="text-xs text-red-600 mt-1">
                   Please save your signature.
                 </p>
@@ -262,22 +287,26 @@ export default function Register() {
             >
               <button
                 type="submit"
-                disabled={isLoading}
+                disabled={isSubmitting || success}
                 className="w-full rounded-full py-3 text-base font-semibold flex items-center justify-center gap-2 bg-gradient-to-r from-blue-600 to-indigo-600 text-white hover:from-blue-700 hover:to-indigo-700 transition-all shadow-lg disabled:opacity-70"
               >
-                {isLoading ? (
-                  <div className="flex justify-center items-center gap-1">
-                    <Loader2 className="animate-spin w-4 h-4" />
-                    <span>Creating...</span>
-                  </div>
+                {success ? (
+                  <motion.span
+                    initial={{ scale: 0 }}
+                    animate={{ scale: 1, rotate: 360 }}
+                    transition={{ type: "spring", stiffness: 300, damping: 20 }}
+                  >
+                    <CheckCircle2 className="w-6 h-6 text-green-300" />
+                  </motion.span>
                 ) : (
-                  <>Create Account</>
+                  <>Login</>
                 )}
               </button>
             </motion.div>
           </form>
         </div>
       </motion.div>
+
       {/* Right Side: Visual */}
       <motion.div
         className="flex-1 hidden lg:flex items-center justify-center relative overflow-hidden bg-gradient-to-br from-blue-600 to-indigo-800"
@@ -301,33 +330,19 @@ export default function Register() {
                 <path
                   d="M 10 0 L 0 0 0 10"
                   fill="none"
-                  stroke="white"
+                  stroke="rgba(255, 255, 255, 0.3)"
                   strokeWidth="0.5"
                 />
               </pattern>
             </defs>
-            <rect width="100" height="100" fill="url(#grid)" />
+            <rect width="100%" height="100%" fill="url(#grid)" />
           </svg>
         </div>
-        <motion.div
-          className="relative z-10 max-w-xl w-full p-8"
-          initial={{ y: 40, opacity: 0 }}
-          animate={{ y: 0, opacity: 1 }}
-          transition={{ duration: 1, delay: 0.3, type: "spring" }}
-        >
-          <img
-            src="https://img.freepik.com/free-vector/time-management-concept-illustration_114360-1013.jpg"
-            alt="Digital Attendance System"
-            className="w-full h-auto rounded-2xl shadow-2xl"
-          />
-          <div className="mt-8 text-white">
-            <h2 className="text-3xl font-bold">Digital Attendance System</h2>
-            <p className="mt-4 text-white/80 text-lg">
-              Track attendance efficiently with our modern digital solution.
-              Save time and increase productivity.
-            </p>
-          </div>
-        </motion.div>
+        <div className="absolute inset-0 z-10 flex items-center justify-center">
+          <h1 className="text-6xl text-center font-extrabold text-white tracking-wide leading-tight">
+            Attendance Management
+          </h1>
+        </div>
       </motion.div>
     </div>
   );
