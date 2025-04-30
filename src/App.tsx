@@ -1,16 +1,16 @@
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import { Provider } from "react-redux";
-// Ensure correct path to store
-import { store } from "./store/store"; // Or wherever your store is defined
-import Register from "./pages/Register"; // Import the Register page
-import { Toaster } from "@/components/ui/sonner"; // Import Toaster
-import Login from "./pages/Login";
+import { store } from "./store/store";
+import Register from "./pages/auth/Register";
+import { Toaster } from "@/components/ui/sonner";
+import Login from "./pages/auth/Login";
+import RequireAuth from "./components/CheckAuth";
+import Staff from "./pages/staff/Staff";
 
 function App() {
   return (
     <Provider store={store}>
       <Router>
-        {/* Routes */}
         <Routes>
           <Route
             path="/"
@@ -25,9 +25,11 @@ function App() {
           />
           <Route path="/register" element={<Register />} />
           <Route path="/login" element={<Login />} />
+          <Route element={<RequireAuth />}>
+            <Route path="/staff" element={<Staff />} />
+          </Route>
           <Route path="/*" element={<div className="p-4">404 Not Found</div>} />
         </Routes>
-        {/* Toaster for notifications */}
         <Toaster richColors position="top-right" />
       </Router>
     </Provider>
