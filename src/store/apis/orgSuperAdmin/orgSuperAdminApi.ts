@@ -76,6 +76,46 @@ interface RevokeOrganizationalAdmin {
   email: string;
 }
 
+export interface User {
+  id: string;
+  email: string;
+  phone: string;
+  name: string;
+}
+
+export interface Organization {
+  id: string;
+  code: string;
+  name: string;
+  is_active: boolean;
+}
+
+export interface OrganizationAdmin {
+  id: number;
+  user: User;
+  organization: Organization;
+  added_by: User;
+  removed_by: User;
+  role: string;
+  is_active: boolean;
+  is_organization_super_admin: boolean;
+  can_add_another_admin: boolean;
+  can_archive_organization: boolean;
+  can_change_attendance_validity: boolean;
+  can_create_programs: boolean;
+  joined_at: string;
+  left_at: string;
+  removed_at: string;
+}
+
+export interface OrganizationAdminResponse {
+  count: number;
+  next: string;
+  previous: string;
+  results: OrganizationAdmin[];
+}
+
+
 export const orgSuperAdminApi = createApi({
   reducerPath: "orgSuperAdminApi",
   baseQuery: baseQueryWithAuth,
@@ -133,6 +173,27 @@ export const orgSuperAdminApi = createApi({
       }
     }
    }),
+  viewAllOrganizationalAdmins: builder.query<OrganizationAdminResponse, String>({
+    query: (id) => {return{
+      url:`organization/organizations/${id}/get_all_organizational_admins/`,
+      method:"GET",
+      params:{
+        id:id
+      }
+    }}
+   }),
+  viewOrganizationalAdminById:builder.query<OrganizationAdminResponse,GetUserOrganizationsParams>({
+    query: (params) => ({
+      url: `organization/organizations/${params.id}/get_user_organizational_admins/`,
+      method: 'GET',
+      params: {
+        id: params.id,
+        email: params.email,
+        page: params.page,
+        page_size: params.page_size
+      }
+    })
+  })
 })
 });
 
@@ -143,5 +204,7 @@ export const {
   useViewArchivedOrgainizationsQuery,
   useGetUserOrganizationsQuery,
   useAssignOrganizationalAdminMutation,
-  useRevokeOrganizationalAdminMutation
+  useRevokeOrganizationalAdminMutation,
+  useViewAllOrganizationalAdminsQuery,
+  useViewOrganizationalAdminByIdQuery
 } = orgSuperAdminApi;

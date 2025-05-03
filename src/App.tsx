@@ -12,6 +12,8 @@ import ViewArchivedOrganizations from "./pages/orgSuperAdmin/ViewArchivedOrganiz
 import ViewActiveOrganizations from "./pages/orgSuperAdmin/ViewActiveOrganizations";
 import AssignOrganizationalAdmin from "./pages/orgSuperAdmin/AssignOrganizationalAdmin";
 import RevokeOrganizationalAdmin from "./pages/orgSuperAdmin/RevokeOrganizationalAdmin";
+import ViewAllOrganizationAdmins from "./pages/orgSuperAdmin/ViewAllOrganizationAdmins";
+import ViewOrganizationAdmin from "./pages/orgSuperAdmin/ViewOrganizationAdmin";
 
 function App() {
   return (
@@ -50,12 +52,20 @@ function App() {
               element={<ViewArchivedOrganizations />}
             />
             <Route
-              path="/organizational_super_admin/assign"
+              path="/organizational_admin/assign"
               element={<AssignOrganizationalAdmin />}
             />
             <Route
-              path="/organizational_super_admin/revoke"
+              path="/organizational_admin/revoke"
               element={<RevokeOrganizationalAdmin />}
+            />
+            <Route
+              path="organizational_admin/all"
+              element={<ViewAllOrganizationAdmins />}
+            />
+            <Route
+              path="organizational_admin/:organizationId/:adminId"
+              element={<ViewOrganizationAdmin />}
             />
           </Route>
           <Route path="/*" element={<div className="p-4">404 Not Found</div>} />
