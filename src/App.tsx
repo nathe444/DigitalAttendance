@@ -10,6 +10,7 @@ import CreateOrganization from "./pages/orgSuperAdmin/CreateOrganization";
 import ViewAllOrganizations from "./pages/orgSuperAdmin/ViewAllOrganizations";
 import ViewArchivedOrganizations from "./pages/orgSuperAdmin/ViewArchivedOrganizations";
 import ViewActiveOrganizations from "./pages/orgSuperAdmin/ViewActiveOrganizations";
+import AssignOrganizationalAdmin from "./pages/orgSuperAdmin/AssignOrganizationalAdmin";
 
 function App() {
   return (
@@ -21,8 +22,8 @@ function App() {
             element={
               <div className="p-4">
                 Home Page -{" "}
-                <a href="/register" className="text-blue-600 underline">
-                  Go to Register
+                <a href="/login" className="text-blue-600 underline">
+                  Go to Login
                 </a>
               </div>
             }
@@ -46,6 +47,10 @@ function App() {
             <Route
               path="/organization/archived"
               element={<ViewArchivedOrganizations />}
+            />
+            <Route
+              path="/Organizational_super_admin"
+              element={<AssignOrganizationalAdmin />}
             />
           </Route>
           <Route path="/*" element={<div className="p-4">404 Not Found</div>} />

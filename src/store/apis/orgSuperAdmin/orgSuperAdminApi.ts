@@ -63,6 +63,19 @@ interface GetUserOrganizationsParams {
   page_size?: number;
 }
 
+interface AssignOrganizationalAdmin {
+  email: string;
+  role?: string;
+  can_add_another_admin?: boolean;
+  can_archive_organization?: boolean;
+  can_change_attendance_validity?: boolean;
+  can_create_programs?: boolean;
+}
+
+interface RevokeOrganizationalAdmin {
+  email: string;
+}
+
 export const orgSuperAdminApi = createApi({
   reducerPath: "orgSuperAdminApi",
   baseQuery: baseQueryWithAuth,
@@ -76,7 +89,7 @@ export const orgSuperAdminApi = createApi({
         }
       }
     }),
-   viewAllOrgainizations: builder.query<ViewUserOrganizationsResponse , void>({
+   viewAllOrganizations: builder.query<ViewUserOrganizationsResponse , void>({
       query: () => "organization/organizations/view_all_organizations/"
    }),
    viewActiveOrgainizations: builder.query<ViewUserOrganizationsResponse , void>({
@@ -95,14 +108,39 @@ export const orgSuperAdminApi = createApi({
         page_size: params.page_size
       }
     })
-   })
+   }),
+   assignOrganizationalAdmin : builder.mutation<void, {data:AssignOrganizationalAdmin; id:string} >({
+    query:({data,id})=>{
+      return{
+        url:`organization/organizations/${id}/assign_organization_admin/`,
+        method:"POST",
+        body:data,
+        params:{
+          id:id
+        }
+      }
+    }
+   }),
+  revokeOrganizationalAdmin : builder.mutation<void, {data:RevokeOrganizationalAdmin; id:string} >({
+    query:({data , id})=>{
+      return{
+        url:`organization/organizations/${id}/revoke_organization_admin/`,
+        method:"POST",
+        body:data,
+        params:{
+          id:id
+        }
+      }
+    }
+   }),
 })
 });
 
 export const { 
   useCreateOrganizationMutation,
-  useViewAllOrgainizationsQuery,
+  useViewAllOrganizationsQuery,
   useViewActiveOrgainizationsQuery,
   useViewArchivedOrgainizationsQuery,
-  useGetUserOrganizationsQuery
+  useGetUserOrganizationsQuery,
+  useAssignOrganizationalAdminMutation
 } = orgSuperAdminApi;

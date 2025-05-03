@@ -1,5 +1,5 @@
 import { motion } from "framer-motion";
-import { useViewAllOrgainizationsQuery } from "@/store/apis/orgSuperAdmin/orgSuperAdminApi";
+import { useViewAllOrganizationsQuery } from "@/store/apis/orgSuperAdmin/orgSuperAdminApi";
 import { Building, Calendar, User, Loader2, Archive } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { format } from "date-fns";
@@ -16,7 +16,7 @@ import {
 import { useState } from "react";
 
 export default function ViewAllOrganizations() {
-  const { data, isLoading, error, refetch } = useViewAllOrgainizationsQuery();
+  const { data, isLoading, error, refetch } = useViewAllOrganizationsQuery();
   const [archiveOrganization, { isLoading: isArchiving }] =
     useArchiveOrganizationMutation();
 
