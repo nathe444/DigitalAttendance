@@ -6,6 +6,7 @@ import { Toaster } from "@/components/ui/sonner";
 import Login from "./pages/auth/Login";
 import RequireAuth from "./components/CheckAuth";
 import Staff from "./pages/staff/Staff";
+import CreateOrganization from "./pages/orgSuperAdmin/CreateOrganization";
 
 function App() {
   return (
@@ -27,6 +28,10 @@ function App() {
           <Route path="/login" element={<Login />} />
           <Route element={<RequireAuth />}>
             <Route path="/staff" element={<Staff />} />
+            <Route
+              path="/organization/create"
+              element={<CreateOrganization />}
+            />
           </Route>
           <Route path="/*" element={<div className="p-4">404 Not Found</div>} />
         </Routes>
