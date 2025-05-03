@@ -1,55 +1,15 @@
 import { motion } from "framer-motion";
-import { useViewAllOrgainizationsQuery } from "@/store/apis/orgSuperAdmin/orgSuperAdminApi";
 import { Building, Calendar, User, Loader2, Archive } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { format } from "date-fns";
-import { useArchiveOrganizationMutation } from "@/store/apis/staff/staffApi";
-import { toast } from "sonner";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogDescription,
-  DialogFooter,
-} from "@/components/ui/dialog";
 import { useState } from "react";
+import { useViewArchivedOrgainizationsQuery } from "@/store/apis/orgSuperAdmin/orgSuperAdminApi";
 
-export default function ViewAllOrganizations() {
-  const { data, isLoading, error, refetch } = useViewAllOrgainizationsQuery();
-  const [archiveOrganization, { isLoading: isArchiving }] =
-    useArchiveOrganizationMutation();
-
-  const [dialogOpen, setDialogOpen] = useState(false);
-  const [selectedOrg, setSelectedOrg] = useState<{
-    id: string;
-    name: string;
-  } | null>(null);
-
-  const openArchiveDialog = (org: { id: string; name: string }) => {
-    setSelectedOrg(org);
-    setDialogOpen(true);
-  };
+export default function ViewArchivedOrganizations() {
+  const { data, isLoading, error, refetch } =
+    useViewArchivedOrgainizationsQuery();
 
   console.log(data);
-
-  const handleArchive = async () => {
-    if (!selectedOrg) return;
-
-    try {
-      await archiveOrganization(selectedOrg.id).unwrap();
-      toast.success(`${selectedOrg.name} archived successfully`);
-      setDialogOpen(false);
-      refetch();
-    } catch (error: any) {
-      console.error("Failed to archive organization:", error);
-      toast.error(
-        error.data?.error ||
-          error.data?.detail ||
-          "Failed to archive organization"
-      );
-    }
-  };
 
   const formatDate = (dateString: string) => {
     if (!dateString) return "N/A";
@@ -62,47 +22,6 @@ export default function ViewAllOrganizations() {
 
   return (
     <>
-      <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
-        <DialogContent className="sm:max-w-md">
-          <DialogHeader>
-            <DialogTitle>Archive Organization</DialogTitle>
-            <DialogDescription>
-              Are you sure you want to archive {selectedOrg?.name}? This action
-              cannot be undone.
-            </DialogDescription>
-          </DialogHeader>
-          <DialogFooter className="sm:justify-end">
-            <Button
-              type="button"
-              variant="outline"
-              onClick={() => setDialogOpen(false)}
-              disabled={isArchiving}
-            >
-              Cancel
-            </Button>
-            <Button
-              type="button"
-              variant="destructive"
-              onClick={handleArchive}
-              disabled={isArchiving}
-              className="gap-1"
-            >
-              {isArchiving ? (
-                <>
-                  <Loader2 className="h-4 w-4 animate-spin" />
-                  Archiving...
-                </>
-              ) : (
-                <>
-                  <Archive className="h-4 w-4" />
-                  Archive
-                </>
-              )}
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
-
       <div className="min-h-screen bg-gradient-to-b from-gray-50 to-blue-50/30 p-4 md:p-8">
         <div className="max-w-6xl mx-auto">
           <motion.div
@@ -112,11 +31,11 @@ export default function ViewAllOrganizations() {
             className="mb-10 text-center"
           >
             <h1 className="text-3xl md:text-4xl font-semibold text-blue-800 flex items-center justify-center">
-              Organizations Directory
+              Archived Organizations Directory
               <Building className="h-10 w-10 text-blue-600 ml-3" />
             </h1>
             <p className="text-gray-600 mt-2 max-w-2xl mx-auto">
-              View and manage all organizations in your attendance system
+              View archived organizations in your attendance system
             </p>
           </motion.div>
 
@@ -137,7 +56,9 @@ export default function ViewAllOrganizations() {
               animate={{ opacity: 1 }}
               className="bg-red-50 text-red-600 p-6 rounded-xl border border-red-100 text-center shadow-sm"
             >
-              <p className="font-medium">Unable to load organizations</p>
+              <p className="font-medium">
+                Unable to load archived organizations
+              </p>
               <p className="text-sm mt-1">
                 Please try again later or contact support
               </p>
@@ -167,9 +88,6 @@ export default function ViewAllOrganizations() {
                       </th>
                       <th className="px-6 py-4 text-left text-xs font-semibold  uppercase tracking-wider border-b border-blue-200">
                         Created At
-                      </th>
-                      <th className="px-6 py-4 text-right text-xs font-semibold  uppercase tracking-wider border-b border-blue-200">
-                        Actions
                       </th>
                     </tr>
                   </thead>
@@ -202,23 +120,6 @@ export default function ViewAllOrganizations() {
                           </td>
                           <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600">
                             {formatDate(org.created_at)}
-                          </td>
-                          <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                            {org.is_active && (
-                              <Button
-                                variant="ghost"
-                                size="sm"
-                                className="text-red-600 hover:bg-red-50 hover:text-red-700"
-                                onClick={() =>
-                                  openArchiveDialog({
-                                    id: org.id,
-                                    name: org.name,
-                                  })
-                                }
-                              >
-                                Archive
-                              </Button>
-                            )}
                           </td>
                         </tr>
                       ))
@@ -288,23 +189,6 @@ export default function ViewAllOrganizations() {
                             {formatDate(org.created_at)}
                           </span>
                         </div>
-
-                        {org.is_active && (
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            className="w-full mt-3 text-red-600 hover:bg-red-50 hover:text-red-700 border border-red-100"
-                            onClick={() =>
-                              openArchiveDialog({
-                                id: org.id,
-                                name: org.name,
-                              })
-                            }
-                          >
-                            <Archive className="h-4 w-4 mr-2" />
-                            Archive Organization
-                          </Button>
-                        )}
                       </div>
                     </motion.div>
                   ))

@@ -8,6 +8,7 @@ import RequireAuth from "./components/CheckAuth";
 import Staff from "./pages/staff/Staff";
 import CreateOrganization from "./pages/orgSuperAdmin/CreateOrganization";
 import ViewAllOrganizations from "./pages/orgSuperAdmin/ViewAllOrganizations";
+import ViewArchivedOrganizations from "./pages/orgSuperAdmin/ViewArchivedOrganizations";
 
 function App() {
   return (
@@ -36,6 +37,10 @@ function App() {
             <Route
               path="/organization/all"
               element={<ViewAllOrganizations />}
+            />
+            <Route
+              path="/organization/archived"
+              element={<ViewArchivedOrganizations />}
             />
           </Route>
           <Route path="/*" element={<div className="p-4">404 Not Found</div>} />
