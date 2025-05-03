@@ -13,23 +13,23 @@ interface CreateOrganizationResponse {
   is_archived:boolean
 }
 
-interface ViewOrganizationsResponse {
-  count: number;
-  next: string;
-  previous: string;
-  results: Organization[];
-}
+// interface ViewOrganizationsResponse {
+//   count: number;
+//   next: string;
+//   previous: string;
+//   results: Organization[];
+// }
 
-interface Organization{
-  id: string;
-  code: string;
-  name: string;
-  is_active: boolean;
-  created_at: string;     
-  archived_at: string;    
-  created_by: string;
-  archived_by: string;
-}
+// interface Organization{
+//   id: string;
+//   code: string;
+//   name: string;
+//   is_active: boolean;
+//   created_at: string;     
+//   archived_at: string;    
+//   created_by: string;
+//   archived_by: string;
+// }
 
 interface UserInfo {
   id: string;
@@ -76,13 +76,13 @@ export const orgSuperAdminApi = createApi({
         }
       }
     }),
-   viewAllOrgainizations: builder.query<ViewOrganizationsResponse , void>({
+   viewAllOrgainizations: builder.query<ViewUserOrganizationsResponse , void>({
       query: () => "organization/organizations/view_all_organizations/"
    }),
-   viewActiveOrgainizations: builder.query<ViewOrganizationsResponse , void>({
+   viewActiveOrgainizations: builder.query<ViewUserOrganizationsResponse , void>({
     query: () => "organization/organizations/view_active_organizations/"
    }),
-   viewArchivedOrgainizations: builder.query<ViewOrganizationsResponse , void>({
+   viewArchivedOrgainizations: builder.query<ViewUserOrganizationsResponse , void>({
     query: () => "organization/organizations/view_archived_organizations/"
    }),
    getUserOrganizations: builder.query<ViewUserOrganizationsResponse, GetUserOrganizationsParams>({

@@ -46,7 +46,19 @@ export const staffApi = createApi({
         body: staffData,
       }),
   }),
+
+    archiveOrganization:builder.mutation<string,string>({
+      query:(id)=>{
+        return{
+          url:`organization/organizations/${id}/archive_organization/`,
+          method:"POST",
+          params:{
+            id:id 
+          }
+        }
+      }
+    }),
 })
 });
 
-export const {useAssignStaffMutation ,useRevokeStaffMutation , useAssignOrganizationalSuperAdminMutation, useRevokeOrganizationalSuperAdminMutation } = staffApi;
+export const {useAssignStaffMutation ,useRevokeStaffMutation , useAssignOrganizationalSuperAdminMutation, useRevokeOrganizationalSuperAdminMutation,useArchiveOrganizationMutation } = staffApi;

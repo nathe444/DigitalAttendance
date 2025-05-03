@@ -7,6 +7,7 @@ import Login from "./pages/auth/Login";
 import RequireAuth from "./components/CheckAuth";
 import Staff from "./pages/staff/Staff";
 import CreateOrganization from "./pages/orgSuperAdmin/CreateOrganization";
+import ViewAllOrganizations from "./pages/orgSuperAdmin/ViewAllOrganizations";
 
 function App() {
   return (
@@ -31,6 +32,10 @@ function App() {
             <Route
               path="/organization/create"
               element={<CreateOrganization />}
+            />
+            <Route
+              path="/organization/all"
+              element={<ViewAllOrganizations />}
             />
           </Route>
           <Route path="/*" element={<div className="p-4">404 Not Found</div>} />
