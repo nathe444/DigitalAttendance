@@ -9,6 +9,7 @@ import Staff from "./pages/staff/Staff";
 import CreateOrganization from "./pages/orgSuperAdmin/CreateOrganization";
 import ViewAllOrganizations from "./pages/orgSuperAdmin/ViewAllOrganizations";
 import ViewArchivedOrganizations from "./pages/orgSuperAdmin/ViewArchivedOrganizations";
+import ViewActiveOrganizations from "./pages/orgSuperAdmin/ViewActiveOrganizations";
 
 function App() {
   return (
@@ -37,6 +38,10 @@ function App() {
             <Route
               path="/organization/all"
               element={<ViewAllOrganizations />}
+            />
+            <Route
+              path="/organization/active"
+              element={<ViewActiveOrganizations />}
             />
             <Route
               path="/organization/archived"
