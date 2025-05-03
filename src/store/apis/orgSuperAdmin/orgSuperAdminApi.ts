@@ -142,5 +142,6 @@ export const {
   useViewActiveOrgainizationsQuery,
   useViewArchivedOrgainizationsQuery,
   useGetUserOrganizationsQuery,
-  useAssignOrganizationalAdminMutation
+  useAssignOrganizationalAdminMutation,
+  useRevokeOrganizationalAdminMutation
 } = orgSuperAdminApi;
