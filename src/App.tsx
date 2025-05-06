@@ -16,6 +16,7 @@ import ViewAllOrganizationAdmins from "./pages/orgSuperAdmin/ViewAllOrganization
 import ViewOrganizationAdmin from "./pages/orgSuperAdmin/ViewOrganizationAdmin";
 import UpdateOrganizationalAdmin from "./pages/orgSuperAdmin/UpdateOrganizationalAdmin";
 import CreateProgram from "./pages/orgAdmin/CreateProgram";
+import GetAllOrganizationPrograms from "./pages/orgAdmin/GetAllOrganizationPrograms";
 
 function App() {
   return (
@@ -74,6 +75,10 @@ function App() {
               element={<ViewOrganizationAdmin />}
             />
             <Route path="/program/create" element={<CreateProgram />} />
+            <Route
+              path="/programs/:organizationId"
+              element={<GetAllOrganizationPrograms />}
+            />
           </Route>
           <Route path="/*" element={<div className="p-4">404 Not Found</div>} />
         </Routes>

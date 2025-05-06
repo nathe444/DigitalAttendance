@@ -65,7 +65,7 @@ export const orgAdminApi = createApi({
       },
     }),
     getAllPrograms: builder.query<
-      CreateProgramResponse,
+      PaginatedResponse,
       GetOrganizationsParams
     >({
       query: (params) => ({
