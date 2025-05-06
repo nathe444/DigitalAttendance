@@ -14,20 +14,20 @@ export default function CreateProgram() {
   const navigate = useNavigate();
   const [createProgram, { isLoading }] = useCreateProgramMutation();
 
-  // Fetch organizations
   const { data: organizations, isLoading: isLoadingOrgs } =
     useViewAllOrganizationsQuery();
-
-  console.log(organizations);
 
   const [name, setName] = useState("");
   const [code, setCode] = useState("");
   const [selectedOrg, setSelectedOrg] = useState("");
+  const [selectedOrgId, setSelectedOrgId] = useState("");
   const [errors, setErrors] = useState<{
     name?: string;
     code?: string;
     org?: string;
   }>({});
+
+  console.log(code);
 
   const handleBack = () => {
     navigate(-1);
@@ -55,8 +55,14 @@ export default function CreateProgram() {
   };
 
   const handleOrgChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-    setSelectedOrg(e.target.value);
-    setCode(e.target.value);
+    const selectedCode = e.target.value;
+    setSelectedOrg(selectedCode);
+    setCode(selectedCode);
+    // Find the organization by code and set its id
+    const org = organizations?.results?.find(
+      (org: any) => org.code === selectedCode
+    );
+    setSelectedOrgId(org?.id || "");
     setErrors((prev) => ({ ...prev, org: undefined }));
   };
 
@@ -70,7 +76,7 @@ export default function CreateProgram() {
     try {
       await createProgram({ name, code }).unwrap();
       toast.success("Program created successfully");
-      navigate("/programs"); // Adjust this path as needed
+      navigate(`/programs/${selectedOrgId}`);
     } catch (error: any) {
       if (error.data?.detail) {
         toast.error(error.data.detail);
