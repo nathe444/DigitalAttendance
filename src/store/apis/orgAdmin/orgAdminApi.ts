@@ -1,9 +1,10 @@
 import baseQueryWithAuth from "@/services/baseQueryInstance";
-import { createApi} from "@reduxjs/toolkit/query/react";
+import { createApi } from "@reduxjs/toolkit/query/react";
+import { url } from "inspector";
 
 interface CreateProgramRequest {
-  name:string,
-  code:string
+  name: string;
+  code: string;
 }
 
 export interface User {
@@ -39,40 +40,74 @@ export interface PaginatedResponse {
 }
 
 export interface GetOrganizationsParams {
-  organization_pk: string; 
-  page?: number;           
-  page_size?: number;      
+  organization_pk: string;
+  page?: number;
+  page_size?: number;
 }
 
+export interface ArchiveRequest { 
+  id:string
+}
 
 export const orgAdminApi = createApi({
   reducerPath: "orgAdminApi",
   baseQuery: baseQueryWithAuth,
   endpoints: (builder) => ({
-    createProgram:builder.mutation<CreateProgramResponse,CreateProgramRequest>({
-      query:(Data)=>{
-        return{
-          url:"program/programs/create_program/",
-          method:"POST",
-          body:Data
-        }
-      }
+    createProgram: builder.mutation<
+      CreateProgramResponse,
+      CreateProgramRequest
+    >({
+      query: (Data) => {
+        return {
+          url: "program/programs/create_program/",
+          method: "POST",
+          body: Data,
+        };
+      },
     }),
-   getAllPrograms: builder.query<CreateProgramResponse,GetOrganizationsParams >({
+    getAllPrograms: builder.query<
+      CreateProgramResponse,
+      GetOrganizationsParams
+    >({
       query: (params) => ({
-        url: `program/organizations/${params.organization_pk}/get_all_programs/`,
-        method: 'GET',
+        url: `program/organizations/${params.organization_pk}/programs/`,
+        method: "GET",
         params: {
           organization_pk: params.organization_pk,
           page: params.page,
-          page_size: params.page_size
-        }
-      })
-   }),
-  })
+          page_size: params.page_size,
+        },
+      }),
+    }),
+    getAssociatedPrograms: builder.query<
+      CreateProgramResponse,
+      GetOrganizationsParams
+    >({
+      query: (params) => ({
+        url: `program/organizations/${params.organization_pk}/programs/associated_programs/`,
+        method: "GET",
+        params: {
+          organization_pk: params.organization_pk,
+          page: params.page,
+          page_size: params.page_size,
+        },
+      }),
+    
+    }),
+
+    archiveProgram: builder.mutation<void, ArchiveRequest>({
+      query: (data) => {
+        return {
+          url: `program/programs/${data.id}/archive_program/`,
+          method: "POST",
+          params: {
+            id: data.id,
+          }
+        };
+      },
+    }),
+    
+  }),
 });
 
-export const { 
-  useCreateProgramMutation,
-  useGetAllProgramsQuery,
-} = orgAdminApi;
+export const { useCreateProgramMutation, useGetAllProgramsQuery , useGetAssociatedProgramsQuery , useArchiveProgramMutation } = orgAdminApi;
