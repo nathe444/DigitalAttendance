@@ -1,6 +1,5 @@
 import baseQueryWithAuth from "@/services/baseQueryInstance";
 import { createApi } from "@reduxjs/toolkit/query/react";
-import { url } from "inspector";
 
 interface CreateProgramRequest {
   name: string;

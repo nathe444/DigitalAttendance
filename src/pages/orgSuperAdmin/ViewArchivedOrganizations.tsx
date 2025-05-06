@@ -1,13 +1,11 @@
 import { motion } from "framer-motion";
-import { Building, Calendar, User, Loader2, Archive } from "lucide-react";
+import { Building, Calendar, User, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { format } from "date-fns";
-import { useState } from "react";
 import { useViewArchivedOrgainizationsQuery } from "@/store/apis/orgSuperAdmin/orgSuperAdminApi";
 
 export default function ViewArchivedOrganizations() {
-  const { data, isLoading, error, refetch } =
-    useViewArchivedOrgainizationsQuery();
+  const { data, isLoading, error } = useViewArchivedOrgainizationsQuery();
 
   console.log(data);
 
