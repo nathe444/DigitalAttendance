@@ -14,6 +14,7 @@ import AssignOrganizationalAdmin from "./pages/orgSuperAdmin/AssignOrganizationa
 import RevokeOrganizationalAdmin from "./pages/orgSuperAdmin/RevokeOrganizationalAdmin";
 import ViewAllOrganizationAdmins from "./pages/orgSuperAdmin/ViewAllOrganizationAdmins";
 import ViewOrganizationAdmin from "./pages/orgSuperAdmin/ViewOrganizationAdmin";
+import UpdateOrganizationalAdmin from "./pages/orgSuperAdmin/UpdateOrganizationalAdmin";
 
 function App() {
   return (
@@ -54,6 +55,10 @@ function App() {
             <Route
               path="/organizational_admin/assign"
               element={<AssignOrganizationalAdmin />}
+            />
+            <Route
+              path="/organizational_admin/:organizationId/:adminId/update"
+              element={<UpdateOrganizationalAdmin />}
             />
             <Route
               path="/organizational_admin/revoke"

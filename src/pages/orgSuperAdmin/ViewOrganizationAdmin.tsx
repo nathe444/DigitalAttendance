@@ -49,6 +49,19 @@ export default function ViewOrganizationAdmin() {
     navigate(-1);
   };
 
+  console.log(admin);
+
+  const handleNavigate = () => {
+    navigate(
+      `/organizational_admin/${admin.organization.id}/${admin.user.id}/update`,
+      {
+        state: {
+          data: admin,
+        },
+      }
+    );
+  };
+
   return (
     <div className="min-h-screen bg-gradient-to-b from-gray-50 to-blue-50/30">
       <div className="w-full">
@@ -96,15 +109,24 @@ export default function ViewOrganizationAdmin() {
             <div className="px-4 sm:px-6 lg:px-8 py-6 mt-16">
               <div className="max-w-7xl mx-auto">
                 {/* Admin Name and Role */}
-                <div className="mb-8">
-                  <h1 className="text-2xl font-bold text-blue-900">
-                    {admin.user.name || "Unnamed Administrator"}
-                  </h1>
-                  <div className="flex items-center mt-1">
-                    <Badge className="bg-blue-100 text-blue-800 border-blue-200">
-                      {admin.role || "Administrator"}
-                    </Badge>
+                <div className="flex justify-between">
+                  <div className="mb-8">
+                    <h1 className="text-2xl font-bold text-blue-900">
+                      {admin.user.name || "Unnamed Administrator"}
+                    </h1>
+                    <div className="flex items-center mt-1">
+                      <Badge className="bg-blue-100 text-blue-800 border-blue-200">
+                        {admin.role || "Administrator"}
+                      </Badge>
+                    </div>
                   </div>
+
+                  <Button
+                    className="bg-blue-500"
+                    onClick={() => handleNavigate()}
+                  >
+                    Update Admin
+                  </Button>
                 </div>
 
                 <Separator className="my-6" />
@@ -123,8 +145,12 @@ export default function ViewOrganizationAdmin() {
                         <div className="flex items-start">
                           <Mail className="h-5 w-5 text-blue-500 mt-0.5 mr-3" />
                           <div>
-                            <p className="text-sm text-gray-500">Email Address</p>
-                            <p className="font-medium">{admin.user.email || "N/A"}</p>
+                            <p className="text-sm text-gray-500">
+                              Email Address
+                            </p>
+                            <p className="font-medium">
+                              {admin.user.email || "N/A"}
+                            </p>
                           </div>
                         </div>
                       </div>
@@ -133,8 +159,12 @@ export default function ViewOrganizationAdmin() {
                         <div className="flex items-start">
                           <Phone className="h-5 w-5 text-blue-500 mt-0.5 mr-3" />
                           <div>
-                            <p className="text-sm text-gray-500">Phone Number</p>
-                            <p className="font-medium">{admin.user.phone || "N/A"}</p>
+                            <p className="text-sm text-gray-500">
+                              Phone Number
+                            </p>
+                            <p className="font-medium">
+                              {admin.user.phone || "N/A"}
+                            </p>
                           </div>
                         </div>
                       </div>
@@ -143,7 +173,9 @@ export default function ViewOrganizationAdmin() {
                         <div className="flex items-start">
                           <Building className="h-5 w-5 text-blue-500 mt-0.5 mr-3" />
                           <div>
-                            <p className="text-sm text-gray-500">Organization</p>
+                            <p className="text-sm text-gray-500">
+                              Organization
+                            </p>
                             <p className="font-medium">
                               {admin.organization?.name || "N/A"}
                             </p>
@@ -171,7 +203,9 @@ export default function ViewOrganizationAdmin() {
                           <Calendar className="h-5 w-5 text-blue-500 mt-0.5 mr-3" />
                           <div>
                             <p className="text-sm text-gray-500">Joined Date</p>
-                            <p className="font-medium">{formatDate(admin.joined_at)}</p>
+                            <p className="font-medium">
+                              {formatDate(admin.joined_at)}
+                            </p>
                           </div>
                         </div>
                       </div>
@@ -183,7 +217,9 @@ export default function ViewOrganizationAdmin() {
                             <div>
                               <p className="text-sm text-gray-500">Added By</p>
                               <p className="font-medium">
-                                {admin.added_by.name || admin.added_by.email || "N/A"}
+                                {admin.added_by.name ||
+                                  admin.added_by.email ||
+                                  "N/A"}
                               </p>
                               {admin.added_by.email && admin.added_by.name && (
                                 <p className="text-xs text-gray-400">

@@ -182,7 +182,7 @@ export const orgSuperAdminApi = createApi({
       }
     }}
    }),
-  viewOrganizationalAdminById:builder.query<OrganizationAdminResponse,GetUserOrganizationsParams>({
+  viewOrganizationalAdminByEmail:builder.query<OrganizationAdminResponse,GetUserOrganizationsParams>({
     query: (params) => ({
       url: `organization/organizations/${params.id}/get_user_organizational_admins/`,
       method: 'GET',
@@ -193,7 +193,19 @@ export const orgSuperAdminApi = createApi({
         page_size: params.page_size
       }
     })
-  })
+  }),
+  updateOrganizationalAdmin: builder.mutation<void, {data:AssignOrganizationalAdmin; id:string} >({
+    query:({data,id})=>{
+      return{
+        url:`organization/organizations/${id}/update_organization_admin/`,
+        method:"PATCH",
+        body:data,
+        params:{
+          id:id
+        }
+      }
+    }
+   })
 })
 });
 
@@ -206,5 +218,6 @@ export const {
   useAssignOrganizationalAdminMutation,
   useRevokeOrganizationalAdminMutation,
   useViewAllOrganizationalAdminsQuery,
-  useViewOrganizationalAdminByIdQuery
+  useViewOrganizationalAdminByEmailQuery,
+  useUpdateOrganizationalAdminMutation
 } = orgSuperAdminApi;
