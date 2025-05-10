@@ -18,6 +18,7 @@ import UpdateOrganizationalAdmin from "./pages/orgSuperAdmin/UpdateOrganizationa
 import CreateProgram from "./pages/orgAdmin/CreateProgram";
 import GetAllOrganizationPrograms from "./pages/orgAdmin/GetAllOrganizationPrograms";
 import ViewProgram from "./pages/orgAdmin/ViewProgram";
+import Invitations from "./pages/orgAdmin/Invitations";
 
 function App() {
   return (
@@ -79,6 +80,7 @@ function App() {
 
             <Route path="/programs/" element={<GetAllOrganizationPrograms />} />
             <Route path="program/:id" element={<ViewProgram />} />
+            <Route path="/invitations" element={<Invitations />} />
           </Route>
 
           <Route path="/*" element={<div className="p-4">404 Not Found</div>} />
