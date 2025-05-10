@@ -76,7 +76,7 @@ export default function CreateProgram() {
     try {
       await createProgram({ name, code }).unwrap();
       toast.success("Program created successfully");
-      navigate(`/programs/${selectedOrgId}`);
+      navigate(`/programs`);
     } catch (error: any) {
       if (error.data?.detail) {
         toast.error(error.data.detail);

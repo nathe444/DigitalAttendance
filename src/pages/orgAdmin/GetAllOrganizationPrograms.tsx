@@ -1,14 +1,44 @@
 import { useState } from "react";
-import { useParams, useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import { useGetAllProgramsQuery } from "@/store/apis/orgAdmin/orgAdminApi";
-import { Loader2, AlertTriangle, ChevronRight } from "lucide-react";
+import { Loader2, AlertTriangle, ChevronRight, Building } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { useViewAllOrganizationsQuery } from "@/store/apis/orgSuperAdmin/orgSuperAdminApi";
 
 export default function GetAllOrganizationPrograms() {
-  const { organizationId } = useParams<{ organizationId: string }>();
   const navigate = useNavigate();
+  const [selectedOrganizationId, setSelectedOrganizationId] =
+    useState<string>("");
   const [page, setPage] = useState(1);
+
+  // Fetch all organizations
+  const {
+    data: organizations,
+    isLoading: isLoadingOrganizations,
+    isError: isErrorOrganizations,
+  } = useViewAllOrganizationsQuery();
+
+  const {
+    data: programs,
+    isLoading: isLoadingPrograms,
+    isError: isErrorPrograms,
+    refetch: refetchPrograms,
+  } = useGetAllProgramsQuery(
+    {
+      organization_pk: selectedOrganizationId,
+      page,
+      page_size: 10,
+    },
+    { skip: !selectedOrganizationId }
+  );
 
   const getInitials = (name: string) => {
     if (!name) return "P";
@@ -21,14 +51,15 @@ export default function GetAllOrganizationPrograms() {
   };
 
   const handleProgramClick = (programId: string) => {
-    navigate(`/program/${programId}`);
+    const program = programs?.results.filter(
+      (program) => program.id == programId
+    );
+    navigate(`/program/${programId}`, { state: program });
   };
 
-  const { data, isLoading, isError, refetch } = useGetAllProgramsQuery({
-    organization_pk: organizationId || "",
-    page,
-    page_size: 10,
-  });
+  const handleOrganizationChange = (orgId: string) => {
+    setSelectedOrganizationId(orgId);
+  };
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-gray-50 to-blue-50/30 p-4 md:p-8">
@@ -38,152 +69,199 @@ export default function GetAllOrganizationPrograms() {
             <h1 className="text-3xl font-semibold text-blue-800 mb-1">
               Programs
             </h1>
-            <p className="text-gray-600">All programs for this organization</p>
+            <p className="text-gray-600">View programs by organization</p>
           </div>
         </div>
 
-        <div className="bg-white rounded-xl border border-blue-100 shadow-sm overflow-x-auto">
-          {isLoading ? (
-            <div className="flex justify-center items-center h-48">
-              <Loader2 className="h-8 w-8 text-blue-500 animate-spin" />
-              <span className="ml-3 text-blue-700">Loading programs...</span>
+        {/* Organization selector */}
+        <div className="mb-6">
+          <label className="block text-sm font-medium text-blue-700 mb-2">
+            Select Organization
+          </label>
+          {isLoadingOrganizations ? (
+            <div className="flex items-center text-blue-600">
+              <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+              Loading organizations...
             </div>
-          ) : isError ? (
-            <div className="flex flex-col items-center justify-center h-48 text-red-600">
-              <AlertTriangle className="h-8 w-8 mb-2" />
-              <span>Failed to load programs. Please try again.</span>
-              <Button
-                variant="outline"
-                className="mt-4 border-blue-200"
-                onClick={() => refetch()}
-              >
-                Retry
-              </Button>
-            </div>
-          ) : data?.results && data.results.length > 0 ? (
-            <>
-              {/* Table for desktop */}
-              <table className="hidden md:table min-w-full divide-y divide-blue-100">
-                <thead className="bg-blue-50">
-                  <tr>
-                    <th className="px-4 py-3 text-left text-xs font-semibold text-blue-700 uppercase tracking-wider">
-                      Name
-                    </th>
-                    <th className="px-4 py-3 text-left text-xs font-semibold text-blue-700 uppercase tracking-wider">
-                      Code
-                    </th>
-                    <th className="px-4 py-3 text-left text-xs font-semibold text-blue-700 uppercase tracking-wider">
-                      Status
-                    </th>
-                    <th className="px-4 py-3 text-left text-xs font-semibold text-blue-700 uppercase tracking-wider">
-                      Organization
-                    </th>
-                    <th className="px-4 py-3 text-left text-xs font-semibold text-blue-700 uppercase tracking-wider">
-                      Created At
-                    </th>
-                  </tr>
-                </thead>
-                <tbody className="bg-white divide-y divide-blue-50">
-                  {data.results.map((program) => (
-                    <tr
-                      key={program.id}
-                      className="hover:bg-blue-50 transition-colors"
-                    >
-                      <td className="px-4 py-3 font-medium text-blue-900">
-                        {program.name}
-                      </td>
-                      <td className="px-4 py-3 text-blue-700">
-                        {program.organization.code}
-                      </td>
-                      <td className="px-4 py-3">
-                        {program.is_active ? (
-                          <span className="inline-block px-2 py-1 text-xs font-semibold bg-green-100 text-green-800 rounded">
-                            Active
-                          </span>
-                        ) : (
-                          <span className="inline-block px-2 py-1 text-xs font-semibold bg-red-100 text-red-800 rounded">
-                            Archived
-                          </span>
-                        )}
-                      </td>
-                      <td className="px-4 py-3 text-blue-700">
-                        {program.organization?.name || "-"}
-                      </td>
-                      <td className="px-4 py-3 text-gray-600">
-                        {new Date(program.created_at).toLocaleDateString()}
-                      </td>
+          ) : isErrorOrganizations ? (
+            <div className="text-red-600">Failed to load organizations</div>
+          ) : (
+            <Select
+              value={selectedOrganizationId}
+              onValueChange={handleOrganizationChange}
+            >
+              <SelectTrigger className="w-full md:w-80 border-blue-200">
+                <SelectValue placeholder="Select an organization" />
+              </SelectTrigger>
+              <SelectContent>
+                {organizations?.results?.map((org: any) => (
+                  <SelectItem key={org.id} value={org.id}>
+                    <div className="flex items-center">
+                      <Building className="h-4 w-4 mr-2 text-blue-600" />
+                      {org.name}
+                    </div>
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          )}
+        </div>
+
+        {!selectedOrganizationId ? (
+          <div className="bg-blue-50 border border-blue-200 rounded-lg p-8 text-center">
+            <Building className="h-12 w-12 text-blue-400 mx-auto mb-4" />
+            <h3 className="text-lg font-medium text-blue-800 mb-2">
+              Select an Organization
+            </h3>
+            <p className="text-blue-600">
+              Please select an organization to view its programs.
+            </p>
+          </div>
+        ) : (
+          <div className="bg-white rounded-xl border border-blue-100 shadow-sm overflow-x-auto">
+            {isLoadingPrograms ? (
+              <div className="flex justify-center items-center h-48">
+                <Loader2 className="h-8 w-8 text-blue-500 animate-spin" />
+                <span className="ml-3 text-blue-700">Loading programs...</span>
+              </div>
+            ) : isErrorPrograms ? (
+              <div className="flex flex-col items-center justify-center h-48 text-red-600">
+                <AlertTriangle className="h-8 w-8 mb-2" />
+                <span>Failed to load programs. Please try again.</span>
+                <Button
+                  variant="outline"
+                  className="mt-4 border-blue-200"
+                  onClick={() => refetchPrograms()}
+                >
+                  Retry
+                </Button>
+              </div>
+            ) : programs?.results && programs.results.length > 0 ? (
+              <>
+                {/* Table for desktop */}
+                <table className="hidden md:table min-w-full divide-y divide-blue-100">
+                  <thead className="bg-blue-50">
+                    <tr>
+                      <th className="px-4 py-3 text-left text-xs font-semibold text-blue-700 uppercase tracking-wider">
+                        Name
+                      </th>
+                      <th className="px-4 py-3 text-left text-xs font-semibold text-blue-700 uppercase tracking-wider">
+                        Code
+                      </th>
+                      <th className="px-4 py-3 text-left text-xs font-semibold text-blue-700 uppercase tracking-wider">
+                        Status
+                      </th>
+                      <th className="px-4 py-3 text-left text-xs font-semibold text-blue-700 uppercase tracking-wider">
+                        Organization
+                      </th>
+                      <th className="px-4 py-3 text-left text-xs font-semibold text-blue-700 uppercase tracking-wider">
+                        Created At
+                      </th>
                     </tr>
-                  ))}
-                </tbody>
-              </table>
-
-              {/* Card view for mobile */}
-              <div className="md:hidden grid grid-cols-1 gap-4 p-4">
-                {data.results.map((program) => (
-                  <div
-                    key={program.id}
-                    className="overflow-hidden border border-blue-100 rounded-lg hover:shadow-md transition-shadow cursor-pointer bg-white"
-                    onClick={() => handleProgramClick(program.id)}
-                  >
-                    <div className="bg-gradient-to-r from-blue-500 to-blue-600 h-2"></div>
-                    <div className="p-4">
-                      <div className="flex items-start space-x-3">
-                        <Avatar className="h-12 w-12 border-2 border-blue-100">
-                          <AvatarFallback className="bg-blue-100 text-blue-700">
-                            {getInitials(program.name)}
-                          </AvatarFallback>
-                        </Avatar>
-                        <div className="flex-1">
-                          <h3 className="font-semibold text-blue-900">
-                            {program.name}
-                          </h3>
-                          <div className="mt-2">
-                            {program.is_active ? (
-                              <span className="inline-block px-2 py-1 text-xs font-semibold bg-green-100 text-green-800 rounded">
-                                Active
-                              </span>
-                            ) : (
-                              <span className="inline-block px-2 py-1 text-xs font-semibold bg-red-100 text-red-800 rounded">
-                                Archived
-                              </span>
-                            )}
-                          </div>
-                        </div>
-                        <ChevronRight className="h-5 w-5 text-blue-500" />
-                      </div>
-
-                      <div className="mt-3 flex flex-col space-y-1.5">
-                        <div className="flex flex-wrap gap-x-6 gap-y-1 text-sm text-blue-700">
-                          <span>
-                            <span className="font-medium">Code:</span>{" "}
-                            {program.organization.code}
-                          </span>
-                          <span>
-                            <span className="font-medium">Organization:</span>{" "}
-                            {program.organization?.name || "-"}
-                          </span>
-                        </div>
-                        <div className="text-xs text-gray-500">
-                          Created:{" "}
+                  </thead>
+                  <tbody className="bg-white divide-y divide-blue-50">
+                    {programs.results.map((program) => (
+                      <tr
+                        key={program.id}
+                        className="hover:bg-blue-50 transition-colors cursor-pointer"
+                        onClick={() => handleProgramClick(program.id)}
+                      >
+                        <td className="px-4 py-3 font-medium text-blue-900">
+                          {program.name}
+                        </td>
+                        <td className="px-4 py-3 text-blue-700">
+                          {program.organization.code}
+                        </td>
+                        <td className="px-4 py-3">
+                          {program.is_active ? (
+                            <span className="inline-block px-2 py-1 text-xs font-semibold bg-green-100 text-green-800 rounded">
+                              Active
+                            </span>
+                          ) : (
+                            <span className="inline-block px-2 py-1 text-xs font-semibold bg-red-100 text-red-800 rounded">
+                              Archived
+                            </span>
+                          )}
+                        </td>
+                        <td className="px-4 py-3 text-blue-700">
+                          {program.organization?.name || "-"}
+                        </td>
+                        <td className="px-4 py-3 text-gray-600">
                           {new Date(program.created_at).toLocaleDateString()}
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+
+                {/* Card view for mobile */}
+                <div className="md:hidden grid grid-cols-1 gap-4 p-4">
+                  {programs.results.map((program) => (
+                    <div
+                      key={program.id}
+                      className="overflow-hidden border border-blue-100 rounded-lg hover:shadow-md transition-shadow cursor-pointer bg-white"
+                      onClick={() => handleProgramClick(program.id)}
+                    >
+                      <div className="bg-gradient-to-r from-blue-500 to-blue-600 h-2"></div>
+                      <div className="p-4">
+                        <div className="flex items-start space-x-3">
+                          <Avatar className="h-12 w-12 border-2 border-blue-100">
+                            <AvatarFallback className="bg-blue-100 text-blue-700">
+                              {getInitials(program.name)}
+                            </AvatarFallback>
+                          </Avatar>
+                          <div className="flex-1">
+                            <h3 className="font-semibold text-blue-900">
+                              {program.name}
+                            </h3>
+                            <div className="mt-2">
+                              {program.is_active ? (
+                                <span className="inline-block px-2 py-1 text-xs font-semibold bg-green-100 text-green-800 rounded">
+                                  Active
+                                </span>
+                              ) : (
+                                <span className="inline-block px-2 py-1 text-xs font-semibold bg-red-100 text-red-800 rounded">
+                                  Archived
+                                </span>
+                              )}
+                            </div>
+                          </div>
+                          <ChevronRight className="h-5 w-5 text-blue-500" />
+                        </div>
+
+                        <div className="mt-3 flex flex-col space-y-1.5">
+                          <div className="flex flex-wrap gap-x-6 gap-y-1 text-sm text-blue-700">
+                            <span>
+                              <span className="font-medium">Code:</span>{" "}
+                              {program.organization.code}
+                            </span>
+                            <span>
+                              <span className="font-medium">Organization:</span>{" "}
+                              {program.organization?.name || "-"}
+                            </span>
+                          </div>
+                          <div className="text-xs text-gray-500">
+                            Created:{" "}
+                            {new Date(program.created_at).toLocaleDateString()}
+                          </div>
                         </div>
                       </div>
                     </div>
-                  </div>
-                ))}
+                  ))}
+                </div>
+              </>
+            ) : (
+              <div className="flex flex-col items-center justify-center h-48 text-blue-700">
+                <span className="text-lg font-medium mb-2">
+                  No programs found
+                </span>
+                <span className="text-gray-500">
+                  There are no programs for this organization.
+                </span>
               </div>
-            </>
-          ) : (
-            <div className="flex flex-col items-center justify-center h-48 text-blue-700">
-              <span className="text-lg font-medium mb-2">
-                No programs found
-              </span>
-              <span className="text-gray-500">
-                There are no programs for this organization.
-              </span>
-            </div>
-          )}
-        </div>
+            )}
+          </div>
+        )}
       </div>
     </div>
   );
