@@ -144,7 +144,7 @@ const ProgramInvites = ({ programId }: ProgramInvitesProps) => {
                     <Calendar className="h-4 w-4 mr-1 text-blue-500" />
                     <span>Invited: {formatDate(invite.invited_at)}</span>
                   </div>
-                  
+
                   <div className="text-sm text-gray-600 flex items-center mb-3">
                     <span className="text-blue-500 mr-1">By:</span>
                     <span>{invite.invited_by?.name || "Unknown"}</span>
@@ -197,7 +197,9 @@ const ProgramInvites = ({ programId }: ProgramInvitesProps) => {
                     </TableCell>
                     <TableCell>{invite.organization.code}</TableCell>
                     <TableCell>{formatDate(invite.invited_at)}</TableCell>
-                    <TableCell>{invite.invited_by?.name || "Unknown"}</TableCell>
+                    <TableCell>
+                      {invite.invited_by?.name || "Unknown"}
+                    </TableCell>
                     <TableCell>
                       <Badge
                         className={

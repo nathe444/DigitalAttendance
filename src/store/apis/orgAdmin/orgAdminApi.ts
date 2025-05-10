@@ -64,7 +64,14 @@ export interface Invites {
   organization: Organization;
   program: Program;
   is_active: boolean;
-  invited_at: string; 
+  invited_at: string;
+  invited_by: User | null;
+  accepted_at: string | null;
+  accepted_by: User | null;
+  rejected_at: string | null;
+  rejected_by: User | null;
+  removed_at: string | null;
+  removed_by: User | null;
 }
 
 export interface Program {
@@ -153,7 +160,32 @@ export const orgAdminApi = createApi({
         url: `program/programs/${id}/invites/`,
         method: "GET",
       }),
+    }),
+    getInvitations: builder.query<
+      GetInvitesResponse,
+      { organization_pk: string; page?: number; page_size?: number }
+    >({
+      query: (params) => ({
+        url: `program/organizations/${params.organization_pk}/invites/`,
+        method: "GET",
+        params: {
+          page: params.page,
+          page_size: params.page_size,
+        },
+      }),     
+    }),
+   acceptInvitation : builder.mutation<void , string>({
+    query: (id)=> ({
+      url:`program/program_invites/${id}/accept_invite/`,
+      method:"POST",
     })
+   }),
+   rejectInvitation : builder.mutation<void , string>({
+    query: (id)=> ({
+      url:`program/program_invites/${id}/reject_invite/`,
+      method:"POST",
+    })
+   })
   }),
 });
 
@@ -164,5 +196,8 @@ export const {
   useArchiveProgramMutation,
   useInviteOrganizationMutation,
   useUndoInviteOrganizationMutation,
-  useGetInvitesQuery
+  useGetInvitesQuery,
+  useGetInvitationsQuery,
+  useAcceptInvitationMutation,
+  useRejectInvitationMutation
 } = orgAdminApi;
