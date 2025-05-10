@@ -9,6 +9,7 @@ import {
   XCircle,
   Clock,
   Loader2,
+  UserPlus,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -22,18 +23,34 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { useArchiveProgramMutation } from "@/store/apis/orgAdmin/orgAdminApi";
+import {
+  useArchiveProgramMutation,
+  useInviteOrganizationMutation,
+  useGetInvitesQuery,
+} from "@/store/apis/orgAdmin/orgAdminApi";
 import { toast } from "sonner";
+import { Input } from "@/components/ui/input";
+import ProgramInvites from "./ProgramInvites";
 
 const ViewProgram = () => {
   const location = useLocation();
   const navigate = useNavigate();
   const program = location?.state[0];
   const [isArchiveDialogOpen, setIsArchiveDialogOpen] = useState(false);
+  const [isInviteDialogOpen, setIsInviteDialogOpen] = useState(false);
+  const [organizationCode, setOrganizationCode] = useState("");
+  const [codeError, setCodeError] = useState("");
 
-  // Use the archive program mutation
+  // Use the mutations and queries
   const [archiveProgram, { isLoading: isArchiving }] =
     useArchiveProgramMutation();
+  const [inviteOrganization, { isLoading: isInviting }] =
+    useInviteOrganizationMutation();
+  
+  // Add the query to get invites with skip option
+  const { refetch: refetchInvites } = useGetInvitesQuery(program?.id, {
+    skip: !program?.id,
+  });
 
   // Helper function to get initials from name
   const getInitials = (name: string) => {
@@ -55,6 +72,8 @@ const ViewProgram = () => {
       day: "numeric",
     });
   };
+
+  console.log(program);
 
   const handleArchiveProgram = async () => {
     try {
@@ -81,6 +100,42 @@ const ViewProgram = () => {
     }
   };
 
+  const handleInviteOrganization = async (e: React.FormEvent) => {
+    e.preventDefault();
+
+    // Simple validation
+    if (!organizationCode.trim()) {
+      setCodeError("Organization code is required");
+      return;
+    }
+
+    try {
+      await inviteOrganization({
+        data: { code: organizationCode },
+        id: program.id,
+      }).unwrap();
+
+      toast.success("Organization invited successfully");
+      setIsInviteDialogOpen(false);
+      setOrganizationCode("");
+      setCodeError("");
+      
+      // Refetch invites instead of reloading the page
+      refetchInvites();
+    } catch (error: any) {
+      console.error("Failed to invite organization:", error);
+      if (error.data?.detail) {
+        toast.error(error.data.detail);
+      } else if (error.data?.code) {
+        toast.error(`${error.data.code[0]}`);
+      } else if (error.data?.error) {
+        toast.error(`${error.data.error}`);
+      } else {
+        toast.error("Failed to invite organization. Please try again.");
+      }
+    }
+  };
+
   const handleGoBack = () => {
     navigate(-1);
   };
@@ -88,7 +143,7 @@ const ViewProgram = () => {
   return (
     <div className="min-h-screen bg-gradient-to-b from-gray-50 to-blue-50/30 p-4 md:p-8">
       <div className="max-w-5xl mx-auto">
-        {/* Header with back button and archive button */}
+        {/* Header with back button and action buttons */}
         <div className="flex flex-col md:flex-row md:items-center md:justify-between mb-6 gap-4">
           <Button
             variant="ghost"
@@ -99,17 +154,28 @@ const ViewProgram = () => {
             Back to Programs
           </Button>
 
-          {program?.is_active && (
+          <div className="flex flex-col md:flex-row gap-3">
             <Button
               variant="outline"
-              className="text-red-600 border-red-200 hover:bg-red-50 hover:text-red-700"
-              onClick={() => setIsArchiveDialogOpen(true)}
-              disabled={isArchiving}
+              className="text-blue-600 border-blue-200 hover:bg-blue-50 hover:text-blue-700"
+              onClick={() => setIsInviteDialogOpen(true)}
             >
-              <Archive className="mr-2 h-4 w-4" />
-              {program?.is_active && "Archive Program"}
+              <UserPlus className="mr-2 h-4 w-4" />
+              Invite Organization
             </Button>
-          )}
+
+            {program?.is_active && (
+              <Button
+                variant="outline"
+                className="text-red-600 border-red-200 hover:bg-red-50 hover:text-red-700"
+                onClick={() => setIsArchiveDialogOpen(true)}
+                disabled={isArchiving}
+              >
+                <Archive className="mr-2 h-4 w-4" />
+                Archive Program
+              </Button>
+            )}
+          </div>
         </div>
 
         {/* Program header */}
@@ -269,6 +335,9 @@ const ViewProgram = () => {
             </div>
           </CardContent>
         </Card>
+
+        {/* Program Invitations */}
+        <ProgramInvites programId={program?.id} />
       </div>
 
       {/* Standard dialog for archive confirmation */}
@@ -309,6 +378,78 @@ const ViewProgram = () => {
               )}
             </Button>
           </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Dialog for inviting organization */}
+      <Dialog
+        open={isInviteDialogOpen}
+        onOpenChange={(open) => {
+          setIsInviteDialogOpen(open);
+          if (!open) {
+            setOrganizationCode("");
+            setCodeError("");
+          }
+        }}
+      >
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>Invite Organization</DialogTitle>
+            <DialogDescription>
+              Enter the organization code to invite them to this program.
+            </DialogDescription>
+          </DialogHeader>
+
+          <form onSubmit={handleInviteOrganization} className="space-y-4">
+            <div className="space-y-2">
+              <label htmlFor="code" className="text-sm font-medium">
+                Organization Code
+              </label>
+              <Input
+                id="code"
+                placeholder="Enter organization code"
+                className="border-blue-200 focus-visible:ring-blue-500"
+                value={organizationCode}
+                onChange={(e) => {
+                  setOrganizationCode(e.target.value);
+                  if (e.target.value.trim()) {
+                    setCodeError("");
+                  }
+                }}
+                required
+              />
+              {codeError && <p className="text-sm text-red-500">{codeError}</p>}
+            </div>
+
+            <DialogFooter className="sm:justify-end gap-2 mt-4">
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => {
+                  setIsInviteDialogOpen(false);
+                  setOrganizationCode("");
+                  setCodeError("");
+                }}
+                disabled={isInviting}
+              >
+                Cancel
+              </Button>
+              <Button
+                type="submit"
+                className="bg-blue-600 hover:bg-blue-700 text-white"
+                disabled={isInviting}
+              >
+                {isInviting ? (
+                  <>
+                    <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                    Inviting...
+                  </>
+                ) : (
+                  "Invite"
+                )}
+              </Button>
+            </DialogFooter>
+          </form>
         </DialogContent>
       </Dialog>
     </div>
